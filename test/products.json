@@ -1,0 +1,618 @@
+[
+  {
+    "name": "Artículos para el hogar y útiles",
+    "supermarket": "La Colonia",
+    "subCategories": [
+      {
+        "name": "Artículos para el Hogar",
+        "products": [
+          {
+            "name": "Extensión Eléctrica Voltage 24Ft",
+            "price": 164.35
+          },
+          {
+            "name": "Bombillo Philips Led Luz Fría 12W 3Un",
+            "price": 177.15
+          },
+          {
+            "name": "Hielera Polar Polisa Capacidad 30 Lb",
+            "price": 108.95
+          },
+          {
+            "name": "Batería Rayovac Alcalina Aa 12Un",
+            "price": 211.95
+          },
+          {
+            "name": "Batería Duracell Aaa 2Un",
+            "price": 76.95
+          },
+          {
+            "name": "Bateria Duracell 9V 1Un",
+            "price": 143.95
+          },
+          {
+            "name": "Batería Duracell Aa Blister 2Un",
+            "price": 73.95
+          },
+          {
+            "name": "Batería Rayovac Alcalina power Aaa 12Un",
+            "price": 158.3
+          },
+          {
+            "name": "Batería Duracell Cr2032 2Un",
+            "price": 109.9
+          },
+          {
+            "name": "Refresquero Polar Tapa Con Cobertor Fucsia Conchitas 32Oz",
+            "price": 103.9
+          },
+          {
+            "name": "Líquido Para Timón Hs Hidráhulico 2 Oz",
+            "price": 135.9
+          },
+          {
+            "name": "Bombillo Rayovac Led Luz Amarilla 8W",
+            "price": 84.9
+          },
+          {
+            "name": "Cinta Adhesiva 3M Scotch Envoltura 18Mmx40Mm 1Un",
+            "price": 47.9
+          },
+          {
+            "name": "Velas Fátima 6Unds",
+            "price": 19.9
+          },
+          {
+            "name": "Cinta Tape transparente 1 Ct Essential Everyday",
+            "price": 29.9
+          },
+          {
+            "name": "Pila Energizer Max Triple A Blister 6Un",
+            "price": 163.9
+          },
+          {
+            "name": "Batería Duracell Aaa Dura Mas 4 Un",
+            "price": 165.9
+          },
+          {
+            "name": "Batería Energizer Max 9Voltios 1 Un",
+            "price": 117.9
+          },
+          {
+            "name": "Batería Energizer Aaa 2Un",
+            "price": 70.9
+          },
+          {
+            "name": "Tape invisible 1 CT  Essential Everyday",
+            "price": 29.9
+          },
+          {
+            "name": "Bombillo Rayovac Led Luz Blanca 10W 75 Watts 1050 Lúmenes",
+            "price": 68.9
+          },
+          {
+            "name": "Gancho Plástico Para Ropa De Plancha 10 Un",
+            "price": 59.9
+          },
+          {
+            "name": "Bombillo Ecoled Luz Blanca 9W",
+            "price": 63.9
+          },
+          {
+            "name": "Bombillo Ecoled Luz Blanca 11W",
+            "price": 72.9
+          },
+          {
+            "name": "Pila Rayovac Recargable AAA 2Un",
+            "price": 120.9
+          },
+          {
+            "name": "Batería Rayovac AA 4Un",
+            "price": 92.9
+          },
+          {
+            "name": "Batería Rayovac C 2Un",
+            "price": 115.9
+          },
+          {
+            "name": "Velas Fatima 10 Unidades",
+            "price": 25.9
+          },
+          {
+            "name": "Salvavida Intex Gigante Forma De Llanta 39 59252",
+            "price": 111.55
+          },
+          {
+            "name": "Salvavida Intex Surtido Para Niño 59241Np",
+            "price": 36.15
+          },
+          {
+            "name": "Bateria Rayovac Aaa 1.5V Blister 4 Un",
+            "price": 50.55
+          },
+          {
+            "name": "Bateria Gp Alkaline Super Aaa 1.5V 2Un",
+            "price": 37.65
+          },
+          {
+            "name": "Tazon Guateplast Aquarelas Rectangular C/Division 710Ml",
+            "price": 74.15
+          },
+          {
+            "name": "Tazon Guateplast Aquarelas Sandwichito Mini Oceano 475Ml",
+            "price": 25.75
+          },
+          {
+            "name": "Sacacorcho Multiuso Oxford Acero Inoxidable Fo0211",
+            "price": 42.95
+          },
+          {
+            "name": "Batería Duracell Duralock Aa 4 Un",
+            "price": 178.4
+          },
+          {
+            "name": "Inflador Y Sellador H5 Tire Quick-Seal Para Neumático 15Oz",
+            "price": 287.95
+          },
+          {
+            "name": "Linterna Rayovac Mini Recargable 5 Led",
+            "price": 148.95
+          },
+          {
+            "name": "Batería Max Energizer D2 2 Un",
+            "price": 145.95
+          },
+          {
+            "name": "Batería Max Energizer Aa2 2 Un",
+            "price": 65.95
+          },
+          {
+            "name": "Batería Max Energizer Aa 4 Un",
+            "price": 106.35
+          },
+          {
+            "name": "Coolant Hs Para Auto 1 Gl",
+            "price": 174.95
+          },
+          {
+            "name": "Batería Duracell C 2 Un",
+            "price": 126.95
+          },
+          {
+            "name": "Sacacorchos De Metal Oxford Fo0210",
+            "price": 34.35
+          },
+          {
+            "name": "Destapador Manual Oxford Para Botella Fk2859",
+            "price": 51.55
+          },
+          {
+            "name": "Tazón Dots Sándwich Guateplast Acuarelas Surtido 3Tz",
+            "price": 44.6
+          },
+          {
+            "name": "Tazón Dots Guateplast Acuarelas Cuadrado Surtido 3Tz",
+            "price": 46.35
+          },
+          {
+            "name": "Tazón Futura Guateplast Pequeño Océano 26Oz",
+            "price": 39.75
+          },
+          {
+            "name": "Botellín Fit Morado Princesa 23Oz",
+            "price": 51.55
+          },
+          {
+            "name": "Cuchillo De Cocina Tramontina N7",
+            "price": 68.65
+          },
+          {
+            "name": "Recipiente Hermético Lock&Lock Redondo 430Ml",
+            "price": 65.95
+          },
+          {
+            "name": "Dispensad Cross Para Salsas 10Oz",
+            "price": 34.35
+          },
+          {
+            "name": "Tazón Guateplast Acuarelas Rectangular Pequeño Océano 14Oz",
+            "price": 28.35
+          },
+          {
+            "name": "Sandwichera Guateplast Acuarelas Océano 2Tz",
+            "price": 42.95
+          },
+          {
+            "name": "Tazón Futura Guateplast Transparencias Pequeño 770Ml",
+            "price": 42.95
+          },
+          {
+            "name": "Aceite De Motor Convencional Shield Classic 20W-50 946 Ml",
+            "price": 246.55
+          },
+          {
+            "name": "Liquido De Frenos H5 Dot3 354 Ml",
+            "price": 142.95
+          },
+          {
+            "name": "Recipiente Plástico Rectangular Para Microondas 1.25L",
+            "price": 188.75
+          },
+          {
+            "name": "Tazón Click Clack Guateplast Rectangular Transparente 50Oz",
+            "price": 111.55
+          },
+          {
+            "name": "Capecillos Walton & Post 90 Un",
+            "price": 38.8
+          },
+          {
+            "name": "Frasco De Vidrio Ball 8Oz",
+            "price": 40.45
+          },
+          {
+            "name": "Contenedor De Almacenamiento Glad Para Alimento 3 Un",
+            "price": 161.55
+          },
+          {
+            "name": "Bandeja De Aluminio Mediana 1 Un",
+            "price": 27.35
+          },
+          {
+            "name": "Molde De Aluminio Pequeno 1 Un",
+            "price": 23.95
+          },
+          {
+            "name": "Pinza Para Ropa American 50Un",
+            "price": 65.8
+          },
+          {
+            "name": "Aceite Lubrimaster 3Oz",
+            "price": 22.6
+          },
+          {
+            "name": "Aceite Lubrimaster 1Oz",
+            "price": 15.05
+          },
+          {
+            "name": "Juego de Piscina 1.32mx28cm + Salvavidas + Pelota",
+            "price": 343.35
+          },
+          {
+            "name": "Piscina Intex 3 Tubos Para Niños 1.47mx33cm",
+            "price": 343.35
+          },
+          {
+            "name": "Piscina Inflable Intex 3 Aros 1.68mX38cm Azul",
+            "price": 360.35
+          },
+          {
+            "name": "Piscina Intex Inflable 3 Aros Azul 1.14mx25Cm",
+            "price": 197.35
+          },
+          {
+            "name": "Salvavidas Inflable Intex 76cm",
+            "price": 60.15
+          },
+          {
+            "name": "Bombillo Ecoled Samsung Led Inside 7W",
+            "price": 59.3
+          },
+          {
+            "name": "Linterna Rayovac Recargable 7 Leds",
+            "price": 216.95
+          },
+          {
+            "name": "Bateria Alcalina Energizer Max Aa-6",
+            "price": 127.35
+          },
+          {
+            "name": "Bateria Alcalina Energizer Max Aaa-4",
+            "price": 116.35
+          },
+          {
+            "name": "Bateria Alcalina Duracell Aa-4",
+            "price": 118.95
+          },
+          {
+            "name": "Bateria Alcalina Rayovac High Energy Aaa-2",
+            "price": 58.75
+          },
+          {
+            "name": "Bateria Rayovac Recargable Aa 2",
+            "price": 180.95
+          },
+          {
+            "name": "Bateria Alcalina Rayovac High Energy Aa-2",
+            "price": 58.75
+          },
+          {
+            "name": "Bateria Alcalina Duracell Aaa 4+2",
+            "price": 247.4
+          },
+          {
+            "name": "Bateria Alcalina Duracell D 2",
+            "price": 139.95
+          },
+          {
+            "name": "Deshumidificador Home Smart 7.7Oz",
+            "price": null
+          },
+          {
+            "name": "Atomizador Surtido 10Oz",
+            "price": null
+          },
+          {
+            "name": "Vela Fátima Gold Vaso",
+            "price": null
+          },
+          {
+            "name": "Pelota Intex Playera De 20 59020Np",
+            "price": null
+          },
+          {
+            "name": "Tazon Guateplast Transparencias Click Clack Cuadrado 475Ml",
+            "price": null
+          },
+          {
+            "name": "Atomizador Guateplast Pequeño Natural 16Oz",
+            "price": null
+          },
+          {
+            "name": "Atomizador Guateplast Grande Natural 32Oz",
+            "price": null
+          },
+          {
+            "name": "Tape Gorilla Blanco 10Yd",
+            "price": null
+          },
+          {
+            "name": "Mini Tambo Guateplast Sport Surtido 18 Oz",
+            "price": null
+          },
+          {
+            "name": "Termo Escolar Doki",
+            "price": null
+          },
+          {
+            "name": "Abridor De Lata 4Home",
+            "price": null
+          },
+          {
+            "name": "Limpia Parabrisas Ig Tuning Accessories N16",
+            "price": null
+          },
+          {
+            "name": "Inyector De Sabor Good Cook Para Comida 1 Un",
+            "price": null
+          },
+          {
+            "name": "Piscina Rigida Intex 1.83mx38cm",
+            "price": null
+          },
+          {
+            "name": "Lentes De Natación Intex  3-8",
+            "price": null
+          },
+          {
+            "name": "Pelota Playera Inflable Intex  51cm",
+            "price": null
+          },
+          {
+            "name": "Piscina Rígida Intex 1.52mx25cm",
+            "price": null
+          },
+          {
+            "name": "Piscina Inflable Intex 4 Tubos Colores 1.68mx46cm",
+            "price": null
+          },
+          {
+            "name": "Chaleco Salvavidas Intex Para Niño  41cmx30cm",
+            "price": null
+          },
+          {
+            "name": "Super Glue Gorilla Instantaneo 3 Gr",
+            "price": null
+          },
+          {
+            "name": "Super Glue Gorilla Instantaneo 2 Tubos 3 Gr",
+            "price": null
+          },
+          {
+            "name": "Super Glue Gorilla Instantaneo 15Gr",
+            "price": null
+          }
+        ]
+      },
+      {
+        "name": "Escolar y Útiles",
+        "products": [
+          {
+            "name": "Bolígrafos Bic Dura Classico+1 Grafit",
+            "price": 21.9
+          },
+          {
+            "name": "Rotuladores Bic Intensity Punto Fino 0.4Mm 5 Un",
+            "price": 150.9
+          },
+          {
+            "name": "Portaminas Bic Hbn2 Fino 0,5Mm 3Un",
+            "price": 33.9
+          },
+          {
+            "name": "Marcador Para Pizarra Bic Negro 1Un",
+            "price": 26.9
+          },
+          {
+            "name": "Lápiz De Color Bic Evolution 24 Un + 2Lápiz Grafito",
+            "price": 118.9
+          },
+          {
+            "name": "Bolígrafo Bic Fashion Colores Surtidos 1,2Mm 4Un",
+            "price": 29.9
+          },
+          {
+            "name": "Portaminas Bic Hbn2 Mediano 0,7Mm",
+            "price": 33.9
+          },
+          {
+            "name": "Marcador Permanente Bic Fino 1.1 Mm 7 Un",
+            "price": 112.9
+          },
+          {
+            "name": "Marcador Permanente Bic Negro 1 Un",
+            "price": 29.9
+          },
+          {
+            "name": "Dispensador De Cinta Adhesiva 3M Scotch 1 Un",
+            "price": 157.9
+          },
+          {
+            "name": "Lápiz Adhesivo 3M Scotch Cilindro 20 Gr",
+            "price": 53.9
+          },
+          {
+            "name": "Glue Gorilla Original Impermeable 59 Ml",
+            "price": null
+          },
+          {
+            "name": "Masking Tape Grande Café",
+            "price": 61.95
+          },
+          {
+            "name": "4 Bolígrafos Bic Up + 1 Lápiz Grafito",
+            "price": 24.5
+          },
+          {
+            "name": "Estuché De Marcadores Bic Para Pizarra 4 Unidades+ Borrador",
+            "price": 115.95
+          },
+          {
+            "name": "Resaltadores Bic Brite Liner Surt 2Un",
+            "price": 38.35
+          },
+          {
+            "name": "Lápices De Colores Bic Bicolor Hex 12Un",
+            "price": 77.8
+          },
+          {
+            "name": "Resaltador Bic Brite Liner Gri Flúor 1Un",
+            "price": 22.75
+          },
+          {
+            "name": "Bolígrafo Bic Crist Fashi Punta Gruesa 10Un",
+            "price": 47.6
+          },
+          {
+            "name": "Marcador Bic Pizarra Azul Marking 1 Un",
+            "price": 29.95
+          },
+          {
+            "name": "4 Bolígrafos Bic Up+ 1 Gratis",
+            "price": 28.15
+          },
+          {
+            "name": "Lápiz Bic Evolution 12Unidades + 2 Lapices Grafito",
+            "price": 77.95
+          },
+          {
+            "name": "Lápiz De Color Bic Lines 12Un",
+            "price": 77.95
+          },
+          {
+            "name": "Marcador Bic Permanente 4Un",
+            "price": null
+          },
+          {
+            "name": "Bolígrafo Bic 4 Colores Punt/Medio 1.0Mm",
+            "price": 51.95
+          },
+          {
+            "name": "Bolígrafos Bic Precisión Y Suavidad 4Un",
+            "price": 28.95
+          },
+          {
+            "name": "Bolígrafo Bic Precisio0.8 Mm Ng/Rj 4Un",
+            "price": 22.5
+          },
+          {
+            "name": "Pluma Bic Correctora Shaken 8Ml",
+            "price": 45.6
+          },
+          {
+            "name": "Lápiz Grafíto Bic Evolution Hb N2 + Bolígrafo Bic Cristal 5 Un",
+            "price": 24.75
+          },
+          {
+            "name": "Lápices De Colores Bic Evolution Mina/Gruesa + Sacapun 24 Un",
+            "price": 123.05
+          },
+          {
+            "name": "Bolígrafo Bic Cristal Intenso Fashion 1.6 Mm 4 Un",
+            "price": 28.15
+          },
+          {
+            "name": "Lápices De Colores Bic Evolution Desliza+Suave 4Mm 12 Un",
+            "price": 71.2
+          },
+          {
+            "name": "Lápiz Grafíto Bic Evolution Hb N.2 + Un Lápiz 5 Un",
+            "price": 28.3
+          },
+          {
+            "name": "Plumones Bic Visa Xl Formato+Grueso 12 Un",
+            "price": 113.1
+          },
+          {
+            "name": "Bolígrafo   Bic 4 Color Fun Retractil Mediano 1.0 Mm",
+            "price": 43.95
+          },
+          {
+            "name": "Lápiz  Grafíto Bic Evolution Hb N2 + Una Goma 9 Un",
+            "price": 48.45
+          },
+          {
+            "name": "Bolígrafo Bic Cristal Precisión Y Suavidad Fashion 4 Un",
+            "price": 33.15
+          },
+          {
+            "name": "Bolígrafos Stabilo 4 Un",
+            "price": null
+          },
+          {
+            "name": "Lapicera Rafkas Princes Pequeño",
+            "price": null
+          },
+          {
+            "name": "Pegamento Para Madera Gorilla 1 Lt",
+            "price": null
+          },
+          {
+            "name": "Marcador Permanente Bic Grip Negro 1.1Mm",
+            "price": null
+          },
+          {
+            "name": "Marcador Bic Permanente Rojo 1 Un",
+            "price": null
+          },
+          {
+            "name": "Marcador Bic Permanente Azul 1 Un",
+            "price": null
+          },
+          {
+            "name": "Bolígrafo Bic Cristal Clic Fash Blis8Un",
+            "price": null
+          },
+          {
+            "name": "Plumones Bic Evolution Fantasía 12 Un",
+            "price": null
+          }
+        ]
+      },
+      {
+        "name": "Toallas",
+        "products": []
+      }
+    ]
+  }
+]

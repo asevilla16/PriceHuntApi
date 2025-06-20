@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  user      String   @unique
+  password  String
+  fullName  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Supermarket {
+  id       String                      @id @default(uuid())
+  name     String                      @unique
+  website  String?
+  products SupermarketProductMapping[]
+}
+
+model Brand {
+  id   String @id @default(uuid())
+  name String @unique
+
+  Products Product[]
+}
+
+model Product {
+  id            String                      @id @default(uuid())
+  name          String
+  brandId       String?
+  brand         Brand?                      @relation(fields: [brandId], references: [id])
+  sku           String?
+  barcode       String?                     @unique
+  mappings      SupermarketProductMapping[]
+  ProductType   ProductType?                @relation(fields: [productTypeId], references: [id])
+  productTypeId String?
+  subCategory   SubCategory?                @relation(fields: [subCategoryId], references: [id])
+  subCategoryId String?
+}
+
+model Category {
+  id            String        @id @default(uuid())
+  name          String        @unique
+  subCategories SubCategory[]
+}
+
+model SubCategory {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  categoryId   String
+  category     Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  productTypes ProductType[]
+  products     Product[]
+}
+
+model ProductType {
+  id            String      @id @default(uuid())
+  name          String
+  subCategory   SubCategory @relation(fields: [subCategoryId], references: [id])
+  subCategoryId String
+  products      Product[]
+}
+
+model SupermarketProductMapping {
+  id            String         @id @default(uuid())
+  supermarketId String
+  productId     String
+  externalId    String // Unique ID from the supermarket's system
+  name          String
+  priceHistory  PriceHistory[]
+  availability  Availability?
+
+  supermarket Supermarket @relation(fields: [supermarketId], references: [id], onDelete: Cascade)
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([supermarketId, externalId]) // Prevent duplicate entries
+}
+
+model PriceHistory {
+  id         String   @id @default(uuid())
+  mappingId  String
+  price      Decimal
+  recordedAt DateTime @default(now())
+
+  mapping SupermarketProductMapping @relation(fields: [mappingId], references: [id])
+}
+
+model Availability {
+  id            String   @id @default(uuid())
+  mappingId     String   @unique
+  inStock       Boolean
+  lastCheckedAt DateTime @default(now())
+
+  mapping SupermarketProductMapping @relation(fields: [mappingId], references: [id])
+}
+
+model ScrapingLogs {
+  id            String   @id @default(uuid())
+  supermarketId String
+  status        String
+  scrapedAt     DateTime @default(now())
+  Errors        String?
+}
