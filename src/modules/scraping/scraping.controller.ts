@@ -22,9 +22,7 @@ export class ScrapingController {
 
   @Get('products')
   findAllProductsByStrategy(@Body() createScrapingDto: CreateScrapingDto) {
-    return this.scrapingService.scrapeAllProducts(
-      createScrapingDto.supermarket,
-    );
+    return this.scrapingService.scrapeProducts(createScrapingDto.supermarket);
   }
 
   @Get('categories')

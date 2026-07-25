@@ -1,236 +1,153 @@
-import { Product } from '@prisma/client';
 import { SupermarketStrategy } from '../interfaces/supermarket-strategy.interface';
-import puppeteer from 'puppeteer';
 import { ScrapeProductDto } from '../dto/scrape-product.dto';
 import { CategoryDto } from '../dto/category.dto';
+import { SubCategoryDto } from '../dto/sub-category.dto';
+
+interface ShopifyVariant {
+  id: number;
+  title: string;
+  price: string;
+  sku: string;
+  barcode: string;
+}
+
+interface ShopifyProduct {
+  id: number;
+  title: string;
+  tags: string[];
+  variants: ShopifyVariant[];
+}
+
+// supercolonial.com is a Shopify store; only these handles correspond to the
+// real department categories shown on the storefront (the rest of
+// /collections.json is promo/discount collections, e.g. "descuentos-*").
+const DEPARTMENTS: { handle: string; name: string }[] = [
+  { handle: 'abarrotes', name: 'Abarrotes' },
+  { handle: 'bebidas-alcoholicas', name: 'Bebidas Alcohólicas' },
+  { handle: 'bebidas-no-alcoholicas', name: 'Bebidas No Alcohólicas' },
+  { handle: 'carnes-y-refrigerados', name: 'Carnes y Refrigerados' },
+  { handle: 'colonial', name: 'Colonial To Go' },
+  { handle: 'cuidado-personal', name: 'Cuidado Personal' },
+  { handle: 'frutas-y-verduras', name: 'Frutas y Verduras' },
+  { handle: 'hogar-y-limpieza', name: 'Hogar y Limpieza' },
+  { handle: 'mascotas', name: 'Mascotas' },
+  { handle: 'snack', name: 'Snacks' },
+];
+
+const PAGE_SIZE = 250;
+const MAX_FETCH_ATTEMPTS = 3;
+const SUPERMARKET_NAME = 'SuperColonial';
 
 export class SupermarketColonialStrategy implements SupermarketStrategy {
-  async autoScroll(page): Promise<any> {
-    await page.evaluate(async () => {
-      await new Promise((resolve, reject) => {
-        let totalHeight = 0;
-        let distance = 100; // px
-        const timer = setInterval(() => {
-          const scrollHeight = document.body.scrollHeight;
-          window.scrollBy(0, distance);
-          totalHeight += distance;
+  private baseUrl = 'https://supercolonial.com';
 
-          // Wait a bit to let new content load
-          if (totalHeight >= scrollHeight) {
-            clearInterval(timer);
-            resolve(0);
-          }
-        }, 100);
-      });
-    });
-  }
+  private async fetchJson<T>(url: string): Promise<T> {
+    let lastError: unknown;
 
-  async fetchProducts(): Promise<any> {
-    // Launch Puppeteer browser
-    const browser = await puppeteer.launch({ headless: false });
-    const page = await browser.newPage();
-    await page.goto('https://www.lacolonia.com/', {
-      waitUntil: 'networkidle2',
-    });
+    for (let attempt = 1; attempt <= MAX_FETCH_ATTEMPTS; attempt++) {
+      try {
+        const response = await fetch(url);
 
-    // Wait for the mega menu button to be visible
-    const selector = '.vtex-flex-layout-0-x-flexColChild--search-mega-menu';
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
 
-    await page.waitForSelector(selector, {
-      visible: true,
-      timeout: 10000,
-    });
+        return (await response.json()) as T;
+      } catch (error) {
+        lastError = error;
 
-    console.log('Selector found:', selector);
-
-    await page.click(selector);
-
-    //Wait for sidebar menu to be visible
-    const linkSelector = '.vtex-mega-menu-2-x-menuItemVertical';
-
-    await page.waitForSelector(linkSelector, {
-      visible: true,
-      timeout: 10000,
-    });
-
-    // Get all main categories
-    const categories = await page.$$(linkSelector);
-
-    let categoryNames: CategoryDto[] = [];
-
-    // Loop through each main category
-    for (let i = 5; i <= 5; i++) {
-      console.time(`Visiting main category ${i + 1}/${categories.length}`);
-      const currentElements = await page.$$(linkSelector);
-
-      const element = currentElements[i];
-      const text = await element.evaluate((el) => el.textContent?.trim());
-
-      // Click on the main category
-      await Promise.all([
-        element.click(),
-        page
-          .waitForNavigation({ waitUntil: 'domcontentloaded' })
-          .catch(() => {}),
-      ]);
-      console.log('clicked main category');
-
-      await page.waitForSelector('.vtex-mega-menu-2-x-submenuListVertical', {
-        visible: true,
-        timeout: 10000, // Wait 60 seconds instead of 30
-      });
-
-      // Get all subcategories
-      const subCategories = await page.$$(
-        '.vtex-mega-menu-2-x-submenuListVertical .vtex-mega-menu-2-x-submenuItemVertical',
-      );
-
-      let categoryFieldWithSubCategories: CategoryDto = {
-        name: text,
-        supermarket: 'La Colonia',
-        subCategories: [],
-      };
-
-      for (let j = 0; j < subCategories.length; j++) {
-        console.log('starting sub category');
-        await page.waitForSelector(
-          '.vtex-mega-menu-2-x-submenuListVertical .vtex-mega-menu-2-x-submenuItemVertical',
-          { visible: true, timeout: 30000 },
-        );
-        const subCategoriesList = await page.$$(
-          '.vtex-mega-menu-2-x-submenuListVertical .vtex-mega-menu-2-x-submenuItemVertical',
-        );
-        const subCategory = subCategoriesList[j];
-        const productGallerySelector = '#gallery-layout-container';
-        const subText = await subCategory.evaluate((el) =>
-          el.textContent?.trim(),
-        );
-
-        await Promise.all([
-          subCategory.click(),
-          page
-            .waitForNavigation({ waitUntil: 'domcontentloaded' })
-            .catch(() => {}),
-        ]);
-        console.log('clicked sub category');
-
-        let products: ScrapeProductDto[] = [];
-
-        try {
-          await page.waitForSelector(productGallerySelector, {
-            visible: true,
-            timeout: 0, // Wait 60 seconds instead of 30
-          });
-
-          // Scroll to the bottom to load all products
-          await this.autoScroll(page);
-
-          // Wait for products to load
-          await page.waitForSelector(
-            '#gallery-layout-container > .vtex-search-result-3-x-galleryItem',
-            {
-              visible: true,
-              timeout: 0, // Wait 60 seconds instead of 30
-            },
+        if (attempt < MAX_FETCH_ATTEMPTS) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, 500 * attempt),
           );
-
-          // Get all products in the subcategory
-          products = await page.evaluate(() => {
-            const items = Array.from(
-              document.querySelectorAll(
-                '#gallery-layout-container > .vtex-search-result-3-x-galleryItem',
-              ),
-            );
-            return items.map((item: HTMLElement) => {
-              // Extract product details
-              const priceContainer = '.vtex-product-price-1-x-sellingPrice';
-              const priceBeforeDiscount = '.vtex-product-price-1-x-listPrice';
-              const name =
-                item.querySelector('.product-name-h2')?.textContent?.trim() ||
-                '';
-
-              const price =
-                item
-                  .querySelector('.vtex-product-price-1-x-currencyInteger')
-                  ?.textContent?.trim() || '';
-              const priceCents =
-                item
-                  .querySelector('.vtex-product-price-1-x-currencyFraction')
-                  ?.textContent?.trim() || '';
-              // const image = (
-              //   item.querySelector(
-              //     '.vtex-product-summary-2-x-imageContainer > img',
-              //   ) as HTMLImageElement | null
-              // )?.src;
-              return { name, price: parseFloat(`${price}.${priceCents}`) };
-            });
-          });
-        } catch (error) {
-          console.warn(`Subcategory "${subText}" not found or empty.`);
         }
-
-        if (subText) {
-          categoryFieldWithSubCategories.subCategories.push({
-            name: subText.split('Ver')[0],
-            products: products || [],
-            categoryName: text,
-          });
-        }
-
-        console.log(JSON.stringify(categoryFieldWithSubCategories, null, 2));
-
-        await page.waitForSelector(selector);
-        await page.click(selector);
-        console.time('waiting for main category to be visible');
-        await page.waitForSelector(linkSelector, {
-          visible: true,
-          timeout: 10000, // Wait 60 seconds instead of 30
-        });
-        console.timeEnd('waiting for main category to be visible');
-
-        // Re-click the main category to return to the main menu
-        const currentCategoryElements = await page.$$(linkSelector);
-
-        const categoryElement = currentCategoryElements[i];
-        await Promise.all([
-          categoryElement.click(),
-          page
-            .waitForNavigation({ waitUntil: 'domcontentloaded' })
-            .catch(() => {}),
-        ]);
-        console.log('clicked main category again');
       }
-
-      categoryNames.push(categoryFieldWithSubCategories);
-
-      console.log(`Visited "${text}"`);
-
-      // await page.goto('https://www.lacolonia.com/', {
-      //   waitUntil: 'networkidle2',
-      // });
-
-      await page.goBack();
-
-      await page.waitForSelector(selector);
-      await page.click(selector);
-      await page.waitForSelector(linkSelector, {
-        visible: true,
-        timeout: 10000, // Wait 60 seconds instead of 30
-      });
-
-      console.log('All Subcategories for this main category visited');
-      console.timeEnd(`Visiting main category ${i + 1}/${categories.length}`);
     }
 
-    return categoryNames;
+    throw new Error(
+      `Failed to fetch "${url}" after ${MAX_FETCH_ATTEMPTS} attempts: ${lastError}`,
+    );
   }
 
-  async scrapeCategories(): Promise<any[]> {
-    return [
-      {
-        name: 'Category 1',
-        supermarket: 'Colonial',
-      },
-    ];
+  private async fetchAllProductsForDepartment(
+    handle: string,
+  ): Promise<ShopifyProduct[]> {
+    const products: ShopifyProduct[] = [];
+
+    for (let page = 1; ; page++) {
+      const url = `${this.baseUrl}/collections/${handle}/products.json?limit=${PAGE_SIZE}&page=${page}`;
+      const data = await this.fetchJson<{ products: ShopifyProduct[] }>(url);
+
+      if (!data.products || data.products.length === 0) {
+        break;
+      }
+
+      products.push(...data.products);
+
+      if (data.products.length < PAGE_SIZE) {
+        break;
+      }
+    }
+
+    return products;
+  }
+
+  // Some products have multiple variants (e.g. different pack sizes), each
+  // with its own sku/price, so each variant becomes its own ScrapeProductDto.
+  private toScrapeProducts(product: ShopifyProduct): ScrapeProductDto[] {
+    return product.variants.map((variant) => ({
+      name:
+        variant.title && variant.title !== 'Default Title'
+          ? `${product.title} - ${variant.title}`
+          : product.title,
+      price: parseFloat(variant.price),
+      sku: variant.sku || undefined,
+      barcode: variant.barcode || undefined,
+      externalId: String(variant.id),
+    }));
+  }
+
+  async fetchProducts(): Promise<CategoryDto[]> {
+    const categories: CategoryDto[] = [];
+
+    for (const department of DEPARTMENTS) {
+      const products = await this.fetchAllProductsForDepartment(
+        department.handle,
+      );
+
+      const subCategoriesByTag = new Map<string, SubCategoryDto>();
+
+      for (const product of products) {
+        const tagName = product.tags[0] || 'Otros';
+
+        if (!subCategoriesByTag.has(tagName)) {
+          subCategoriesByTag.set(tagName, {
+            name: tagName,
+            categoryName: department.name,
+            products: [],
+          });
+        }
+
+        subCategoriesByTag
+          .get(tagName)
+          .products.push(...this.toScrapeProducts(product));
+      }
+
+      categories.push({
+        name: department.name,
+        supermarket: SUPERMARKET_NAME,
+        subCategories: Array.from(subCategoriesByTag.values()),
+      });
+    }
+
+    return categories;
+  }
+
+  async scrapeCategories(): Promise<CategoryDto[]> {
+    return DEPARTMENTS.map((department) => ({
+      name: department.name,
+      supermarket: SUPERMARKET_NAME,
+      subCategories: [],
+    }));
   }
 }

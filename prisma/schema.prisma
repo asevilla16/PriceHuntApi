@@ -59,11 +59,13 @@ model Category {
 
 model SubCategory {
   id           String        @id @default(uuid())
-  name         String        @unique
+  name         String
   categoryId   String
   category     Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   productTypes ProductType[]
   products     Product[]
+
+  @@unique([categoryId, name])
 }
 
 model ProductType {

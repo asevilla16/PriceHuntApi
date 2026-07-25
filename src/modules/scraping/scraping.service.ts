@@ -5,6 +5,15 @@ import { SupermarketStrategyFactory } from './interfaces/supermarket-strategy.fa
 import { PrismaClient } from '@prisma/client';
 import { CategoryDto } from './dto/category.dto';
 
+// Metadata for each supermarket key recognized by SupermarketStrategyFactory.
+// Add an entry here whenever a new strategy is wired up for scrapeProducts.
+const SUPERMARKET_INFO: Record<string, { name: string; website: string }> = {
+  SuperColonial: {
+    name: 'SuperColonial',
+    website: 'https://supercolonial.com/',
+  },
+};
+
 @Injectable()
 export class ScrapingService extends PrismaClient implements OnModuleInit {
   private logger = new Logger('ScrapingService');
@@ -17,154 +26,116 @@ export class ScrapingService extends PrismaClient implements OnModuleInit {
     return 'This action adds a new scraping';
   }
 
-  async scrapeAllProducts(supermarket: string) {
-    return await this.$transaction(async (tx) => {
-      const strategy = SupermarketStrategyFactory.getStrategy(supermarket);
-      const categoriesWithProducts: CategoryDto[] =
-        await strategy.fetchProducts();
-
-      const categoriesData = categoriesWithProducts.map((cat) => ({
-        name: cat.name,
-      }));
-
-      // Step 1: Insert categories
-      const insertedCategories = await tx.category.createManyAndReturn({
-        data: categoriesData,
-        skipDuplicates: true,
-      });
-
-      // Step 2: Arrange subCategories data
-      const subCategoriesData = [];
-      categoriesWithProducts.forEach((cat, idx) => {
-        const categoryId = insertedCategories[idx]?.id;
-        cat.subCategories.forEach((subCat) => {
-          subCategoriesData.push({
-            name: subCat.name,
-            categoryId: categoryId,
-          });
-        });
-      });
-
-      // Step 3: Insert subCategories
-      const insertedSubCategories = await tx.subCategory.createManyAndReturn({
-        data: subCategoriesData,
-        skipDuplicates: true,
-      });
-
-      // Step 4: Arrange productTypes data
-      const productTypesData = [];
-      categoriesWithProducts.forEach((cat, index) => {
-        const categoryId = insertedCategories[index]?.id;
-        cat.subCategories.forEach((subCat, idx) => {
-          const subCategoryId = insertedSubCategories[idx]?.id;
-          subCat.productTypes.forEach((prodType) => {
-            productTypesData.push({
-              name: prodType.name,
-              subCategoryId: subCategoryId,
-            });
-          });
-        });
-      });
-
-      // Step 5: Insert productTypes
-      const insertedProductTypes = await tx.productType.createManyAndReturn({
-        data: productTypesData,
-        skipDuplicates: true,
-      });
-
-      // Step 6: Arrange products data
-      const productsData = [];
-      categoriesWithProducts.forEach((cat, index) => {
-        const categoryId = insertedCategories[index]?.id;
-        cat.subCategories.forEach((subCat, idx) => {
-          const subCategoryId = insertedSubCategories[idx]?.id;
-          subCat.productTypes.forEach((prodType, i) => {
-            const productTypeId = insertedProductTypes[i]?.id;
-            prodType.products.forEach((product) => {
-              productsData.push({
-                name: product.name,
-                subCategoryId: subCategoryId ?? '',
-                productTypeId: productTypeId ?? '',
-                brandId: product.brandId ?? '',
-                sku: product.sku ?? '',
-                externalId: product.externalId ?? '',
-              });
-            });
-          });
-        });
-      });
-
-      // Step 7: Insert products
-      const insertedProducts = await tx.product.createManyAndReturn({
-        data: productsData,
-        skipDuplicates: true,
-      });
-    });
-  }
-
+  // Generic entry point for every SupermarketStrategy: fetches the
+  // category/subCategory/product tree from the given strategy and persists
+  // it into the shared Category/SubCategory/Product tables, tagging each
+  // product with which supermarket it was found at via
+  // SupermarketProductMapping.
   async scrapeProducts(supermarket: string) {
-    const strategy = SupermarketStrategyFactory.getStrategy(supermarket);
-    const categoryWithProducts = await strategy.fetchProducts();
+    const supermarketInfo = SUPERMARKET_INFO[supermarket];
 
-    if (categoryWithProducts.length > 0) {
-      categoryWithProducts.forEach(async (cat) => {
-        const category = await this.category.findFirst({
-          where: { name: cat.category.name },
-          include: {
-            subCategories: true,
+    if (!supermarketInfo) {
+      throw new Error(
+        `No supermarket metadata configured for "${supermarket}"`,
+      );
+    }
+
+    const strategy = SupermarketStrategyFactory.getStrategy(supermarket);
+    const categories: CategoryDto[] = await strategy.fetchProducts();
+
+    const supermarketRecord = await this.supermarket.upsert({
+      where: { name: supermarketInfo.name },
+      update: {},
+      create: supermarketInfo,
+    });
+
+    const insertedProducts = [];
+
+    for (const category of categories) {
+      const categoryRecord = await this.category.upsert({
+        where: { name: category.name },
+        update: {},
+        create: { name: category.name },
+      });
+
+      for (const subCategory of category.subCategories) {
+        const subCategoryRecord = await this.subCategory.upsert({
+          where: {
+            categoryId_name: {
+              categoryId: categoryRecord.id,
+              name: subCategory.name,
+            },
           },
+          update: {},
+          create: { name: subCategory.name, categoryId: categoryRecord.id },
         });
 
-        if (!category) {
-          const newCategory = await this.category.create({
-            data: {
-              name: cat.name,
+        for (const product of subCategory.products) {
+          const productRecord = product.barcode
+            ? await this.product.upsert({
+                where: { barcode: product.barcode },
+                update: {
+                  name: product.name,
+                  sku: product.sku,
+                  subCategoryId: subCategoryRecord.id,
+                },
+                create: {
+                  name: product.name,
+                  sku: product.sku,
+                  barcode: product.barcode,
+                  subCategoryId: subCategoryRecord.id,
+                },
+              })
+            : await (async () => {
+                const existing = await this.product.findFirst({
+                  where: {
+                    name: product.name,
+                    subCategoryId: subCategoryRecord.id,
+                  },
+                });
+
+                return (
+                  existing ??
+                  this.product.create({
+                    data: {
+                      name: product.name,
+                      sku: product.sku,
+                      subCategoryId: subCategoryRecord.id,
+                    },
+                  })
+                );
+              })();
+
+          const mapping = await this.supermarketProductMapping.upsert({
+            where: {
+              supermarketId_externalId: {
+                supermarketId: supermarketRecord.id,
+                externalId: product.externalId,
+              },
+            },
+            update: { name: product.name, productId: productRecord.id },
+            create: {
+              supermarketId: supermarketRecord.id,
+              externalId: product.externalId,
+              name: product.name,
+              productId: productRecord.id,
             },
           });
 
-          for (const subCategory of cat?.subCategories) {
-            const subCategoryExists = category.subCategories.find(
-              (sc) => sc.name === subCategory.name,
-            );
+          await this.priceHistory.create({
+            data: { mappingId: mapping.id, price: product.price },
+          });
 
-            if (!subCategoryExists) {
-              const newSubCategory = await this.subCategory.create({
-                data: {
-                  name: subCategory.name,
-                  categoryId: category.id,
-                },
-              });
-              for (const product of subCategory.products) {
-                const prod = this.product.create({
-                  data: {
-                    name: product.name,
-                    subCategoryId: newSubCategory.id,
-                  },
-                });
-
-                const productMapping = this.supermarketProductMapping.create({
-                  data: {
-                    productId: product.id,
-                    supermarketId: supermarket,
-                    externalId: product.externalId ?? '',
-                    name: product.name,
-                  },
-                });
-
-                const priceHistoryRegistry = this.priceHistory.create({
-                  data: {
-                    mappingId: product.id,
-                    price: product.price,
-                  },
-                });
-              }
-            }
-          }
+          insertedProducts.push(productRecord);
         }
-      });
+      }
     }
 
-    return categoryWithProducts;
+    this.logger.log(
+      `${supermarketInfo.name} scrape finished: ${insertedProducts.length} products processed`,
+    );
+
+    return insertedProducts;
   }
 
   async scrapeCategories(createScrapingDto: CreateScrapingDto) {
