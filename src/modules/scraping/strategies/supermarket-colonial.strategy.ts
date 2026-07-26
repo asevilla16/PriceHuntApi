@@ -2,11 +2,13 @@ import { SupermarketStrategy } from '../interfaces/supermarket-strategy.interfac
 import { ScrapeProductDto } from '../dto/scrape-product.dto';
 import { CategoryDto } from '../dto/category.dto';
 import { SubCategoryDto } from '../dto/sub-category.dto';
+import { fetchJson } from '../utils/fetch-json.util';
 
 interface ShopifyVariant {
   id: number;
   title: string;
   price: string;
+  compare_at_price: string | null;
   sku: string;
   barcode: string;
 }
@@ -35,39 +37,10 @@ const DEPARTMENTS: { handle: string; name: string }[] = [
 ];
 
 const PAGE_SIZE = 250;
-const MAX_FETCH_ATTEMPTS = 3;
 const SUPERMARKET_NAME = 'SuperColonial';
 
 export class SupermarketColonialStrategy implements SupermarketStrategy {
   private baseUrl = 'https://supercolonial.com';
-
-  private async fetchJson<T>(url: string): Promise<T> {
-    let lastError: unknown;
-
-    for (let attempt = 1; attempt <= MAX_FETCH_ATTEMPTS; attempt++) {
-      try {
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
-        }
-
-        return (await response.json()) as T;
-      } catch (error) {
-        lastError = error;
-
-        if (attempt < MAX_FETCH_ATTEMPTS) {
-          await new Promise((resolve) =>
-            setTimeout(resolve, 500 * attempt),
-          );
-        }
-      }
-    }
-
-    throw new Error(
-      `Failed to fetch "${url}" after ${MAX_FETCH_ATTEMPTS} attempts: ${lastError}`,
-    );
-  }
 
   private async fetchAllProductsForDepartment(
     handle: string,
@@ -76,7 +49,7 @@ export class SupermarketColonialStrategy implements SupermarketStrategy {
 
     for (let page = 1; ; page++) {
       const url = `${this.baseUrl}/collections/${handle}/products.json?limit=${PAGE_SIZE}&page=${page}`;
-      const data = await this.fetchJson<{ products: ShopifyProduct[] }>(url);
+      const data = await fetchJson<{ products: ShopifyProduct[] }>(url);
 
       if (!data.products || data.products.length === 0) {
         break;
@@ -101,6 +74,9 @@ export class SupermarketColonialStrategy implements SupermarketStrategy {
           ? `${product.title} - ${variant.title}`
           : product.title,
       price: parseFloat(variant.price),
+      listPrice: variant.compare_at_price
+        ? parseFloat(variant.compare_at_price)
+        : undefined,
       sku: variant.sku || undefined,
       barcode: variant.barcode || undefined,
       externalId: String(variant.id),

@@ -12,6 +12,14 @@ const SUPERMARKET_INFO: Record<string, { name: string; website: string }> = {
     name: 'SuperColonial',
     website: 'https://supercolonial.com/',
   },
+  LaColonia: {
+    name: 'LaColonia',
+    website: 'https://www.lacolonia.com/',
+  },
+  LosAndes: {
+    name: 'LosAndes',
+    website: 'https://comisariatolosandes.com/',
+  },
 };
 
 @Injectable()
@@ -123,7 +131,11 @@ export class ScrapingService extends PrismaClient implements OnModuleInit {
           });
 
           await this.priceHistory.create({
-            data: { mappingId: mapping.id, price: product.price },
+            data: {
+              mappingId: mapping.id,
+              price: product.price,
+              listPrice: product.listPrice ?? null,
+            },
           });
 
           insertedProducts.push(productRecord);

@@ -24,17 +24,21 @@ model User {
 }
 
 model Supermarket {
-  id       String                      @id @default(uuid())
-  name     String                      @unique
-  website  String?
-  products SupermarketProductMapping[]
+  id        String                      @id @default(uuid())
+  name      String                      @unique
+  website   String?
+  products  SupermarketProductMapping[]
+  createdAt DateTime                    @default(now())
+  updatedAt DateTime                    @updatedAt
 }
 
 model Brand {
   id   String @id @default(uuid())
   name String @unique
 
-  Products Product[]
+  Products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Product {
@@ -49,12 +53,16 @@ model Product {
   productTypeId String?
   subCategory   SubCategory?                @relation(fields: [subCategoryId], references: [id])
   subCategoryId String?
+  createdAt     DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
 }
 
 model Category {
   id            String        @id @default(uuid())
   name          String        @unique
   subCategories SubCategory[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model SubCategory {
@@ -64,6 +72,8 @@ model SubCategory {
   category     Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   productTypes ProductType[]
   products     Product[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   @@unique([categoryId, name])
 }
@@ -74,6 +84,8 @@ model ProductType {
   subCategory   SubCategory @relation(fields: [subCategoryId], references: [id])
   subCategoryId String
   products      Product[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 model SupermarketProductMapping {
@@ -84,6 +96,8 @@ model SupermarketProductMapping {
   name          String
   priceHistory  PriceHistory[]
   availability  Availability?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   supermarket Supermarket @relation(fields: [supermarketId], references: [id], onDelete: Cascade)
   product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -95,6 +109,7 @@ model PriceHistory {
   id         String   @id @default(uuid())
   mappingId  String
   price      Decimal
+  listPrice  Decimal?
   recordedAt DateTime @default(now())
 
   mapping SupermarketProductMapping @relation(fields: [mappingId], references: [id])

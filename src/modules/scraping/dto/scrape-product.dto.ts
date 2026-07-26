@@ -6,6 +6,7 @@ export class ScrapeProductDto {
   supermarketId?: string;
   externalId?: string;
   price: number;
+  listPrice?: number;
   productTypeId?: string;
   subCategoryId?: string;
 }

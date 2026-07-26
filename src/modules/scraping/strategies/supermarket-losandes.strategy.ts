@@ -1,191 +1,146 @@
-import puppeteer from 'puppeteer';
 import { SupermarketStrategy } from '../interfaces/supermarket-strategy.interface';
-import { SubCategoryDto } from '../dto/sub-category.dto';
+import { ScrapeProductDto } from '../dto/scrape-product.dto';
 import { CategoryDto } from '../dto/category.dto';
-import { ProductTypeDto } from '../dto/product-type.dto';
+import { SubCategoryDto } from '../dto/sub-category.dto';
+import { fetchJson } from '../utils/fetch-json.util';
+
+interface LosAndesProduct {
+  code: string; // e.g. "0001-000841097103378" -> "<businessPartner>-<zero-padded barcode>"
+  name: string;
+  price: number;
+  oldPrice: number | null;
+  materialGroupCode: string;
+  materialGroupName: string;
+}
+
+interface LosAndesPaginateResponse {
+  totalItems: number;
+  data: LosAndesProduct[];
+}
+
+// comisariatolosandes.com is an Angular SPA backed by the "AVE Applications"
+// vendor platform at andes.aveapplications.com. These are the 4 top-level
+// department codes shown in the site's "Categorias" menu; each product
+// carries its own more specific materialGroupCode/materialGroupName, which
+// is what we classify it under (mirrors how SuperColonial/LaColonia use the
+// product's own category/tag field rather than the query used to find it).
+const DEPARTMENTS: { groupCode: string; name: string }[] = [
+  { groupCode: '1100', name: 'PERECEDEROS' },
+  { groupCode: '1200', name: 'NO PERECEDEROS' },
+  { groupCode: '1300', name: 'NO ALIMENTOS' },
+  { groupCode: '1400', name: 'MASCOTAS' },
+];
+
+const PAGE_SIZE = 250;
+const SUPERMARKET_NAME = 'LosAndes';
+const BASE_URL = 'https://andes.aveapplications.com';
 
 export class SupermarketLosAndesStrategy implements SupermarketStrategy {
-  async scrapeCategories(): Promise<any> {
-    const browser = await puppeteer.launch({ headless: true, slowMo: 100 });
-    const page = await browser.newPage();
-    await page.goto('https://comisariatolosandes.com/', {
-      waitUntil: 'domcontentloaded',
-    });
+  private async fetchAllProductsForDepartment(
+    groupCode: string,
+  ): Promise<LosAndesProduct[]> {
+    const products: LosAndesProduct[] = [];
 
-    await page.click('.mat-dialog-container button');
+    for (let skip = 0; ; skip += PAGE_SIZE) {
+      const url = `${BASE_URL}/api/em/material/paginate?skip=${skip}&take=${PAGE_SIZE}`;
+      const data = await fetchJson<LosAndesPaginateResponse>(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessPartner: 1,
+          storeId: null,
+          groupCode,
+          officeCode: '0',
+          type: 'PD',
+          sortBy: 'name',
+          sortOption: 'ASC',
+          search: '',
+          filter: {
+            priceMin: null,
+            priceMax: null,
+            brand: null,
+            supplier: null,
+            bulletPoint: null,
+            agency: null,
+          },
+          source: 'WEB',
+          hidden: '0',
+        }),
+      });
 
-    await page.waitForSelector('.mat-toolbar .mat-focus-indicator', {
-      visible: true,
-      timeout: 60000, // Wait 60 seconds instead of 30
-    });
-    await page.click('.mat-toolbar .mat-focus-indicator');
+      if (!data.data || data.data.length === 0) {
+        break;
+      }
 
-    console.log('Clicked dropdown');
+      products.push(...data.data);
 
-    await page.waitForSelector('.mat-sidenav .menu-item');
+      if (data.data.length < PAGE_SIZE) {
+        break;
+      }
+    }
 
-    const categoryDropdown = await page.$$eval(
-      '.mat-sidenav .menu-item:not(.sub-menu .menu-item)',
-      (dropdowns) => {
-        return dropdowns.map((dropdown) => {
-          const dropdownTitle: HTMLElement = dropdown.querySelector(
-            '.menu-item span.mat-button-wrapper span.menu-title',
-          );
-
-          // if (!dropdownTitle) {
-          //   await this.category.create({
-          //     data: { name: dropdownTitle.textContent.trim() },
-          //   });
-          // }
-
-          const content: NodeListOf<HTMLElement> = dropdown.querySelectorAll(
-            '.sub-menu .menu-item',
-          );
-
-          let subCategoriesForDropdown: SubCategoryDto[] = [];
-
-          for (const item of content) {
-            let subCategory: SubCategoryDto = {
-              name: '',
-              productTypes: [],
-              categoryName: dropdownTitle
-                ? dropdownTitle.textContent.trim()
-                : 'No title',
-            };
-
-            const subCategoriesBody = item.querySelector(
-              // subcategorias de los menus
-              '.sub-menu .menu-item .mat-button-wrapper',
-            );
-
-            const hasDropdown =
-              subCategoriesBody.querySelector('.menu-expand-icon');
-            const titleElement =
-              subCategoriesBody.querySelector('span.menu-title');
-
-            if (hasDropdown && titleElement) {
-              subCategory.name = titleElement.textContent.trim();
-
-              const subCategoriesTypesMenu = item.querySelector(
-                //tipos de productos por subcategoria
-                '.sub-menu .menu-item app-sidenav-menu',
-              );
-
-              if (subCategoriesTypesMenu) {
-                subCategory.productTypes = Array.from(
-                  subCategoriesTypesMenu.querySelectorAll('.menu-item'),
-                )
-                  .map((typeItem) => {
-                    const typeTitle = typeItem.querySelector('span.menu-title');
-                    return {
-                      name: typeTitle ? typeTitle.textContent.trim() : '',
-                      products: [],
-                    };
-                  })
-                  .filter((type) => type.name !== '');
-              }
-
-              subCategoriesForDropdown.push(subCategory);
-            }
-          }
-
-          return {
-            title: dropdownTitle
-              ? dropdownTitle.textContent.trim()
-              : 'No title',
-            id: dropdown.getAttribute('id') || 'No id',
-            subCategories: subCategoriesForDropdown,
-          };
-        });
-      },
-    );
-
-    await browser.close();
-
-    return categoryDropdown;
+    return products;
   }
 
-  async fetchProducts(): Promise<any> {
-    const browser = await puppeteer.launch({ headless: false, slowMo: 100 });
-    const page = await browser.newPage();
-    await page.goto('https://comisariatolosandes.com/tienda', {
-      waitUntil: 'domcontentloaded',
-    });
+  // `code` is "<businessPartner>-<zero-padded barcode>" (confirmed against
+  // the product images' filenames, which embed the same barcode unpadded).
+  private deriveBarcode(code: string): string | undefined {
+    const barcode = code.split('-')[1]?.replace(/^0+/, '');
+    return barcode || undefined;
+  }
 
-    await page.waitForSelector('.mat-dialog-actions', {
-      visible: true,
-      timeout: 60000, // Wait 60 seconds instead of 30
-    });
+  private toScrapeProduct(product: LosAndesProduct): ScrapeProductDto {
+    return {
+      name: product.name,
+      price: product.price,
+      listPrice: product.oldPrice ?? undefined,
+      sku: product.code,
+      barcode: this.deriveBarcode(product.code),
+      externalId: product.code,
+    };
+  }
 
-    await page.click('.mat-dialog-actions button');
+  async fetchProducts(): Promise<CategoryDto[]> {
+    const categories: CategoryDto[] = [];
 
-    await page.click('.mat-dialog-container button');
+    for (const department of DEPARTMENTS) {
+      const products = await this.fetchAllProductsForDepartment(
+        department.groupCode,
+      );
 
-    // await page.waitForSelector('.mat-toolbar .mat-focus-indicator', {
-    //   visible: true,
-    //   timeout: 60000, // Wait 60 seconds instead of 30
-    // });
-    // await page.click('.mat-toolbar .mat-focus-indicator');
+      const subCategoriesByGroup = new Map<string, SubCategoryDto>();
 
-    // console.log('Clicked dropdown');
+      for (const product of products) {
+        const groupName = product.materialGroupName || 'Otros';
 
-    // await page.waitForSelector('.mat-sidenav .menu-item');
+        if (!subCategoriesByGroup.has(groupName)) {
+          subCategoriesByGroup.set(groupName, {
+            name: groupName,
+            categoryName: department.name,
+            products: [],
+          });
+        }
 
-    // await page.click(
-    //   'mat-sidenav-content .filter-row button.mat-focus-indicator',
-    // );
+        subCategoriesByGroup.get(groupName).products.push(
+          this.toScrapeProduct(product),
+        );
+      }
 
-    // const categories = await page.$$eval(
-    //   'app-category-list .sub-category app-category-list',
-    //   (categories) => {
-    //     return categories.map((category) => {
-    //       return category.outerHTML;
-    //     });
-    //   },
-    // );
-
-    // return categories[0];
-
-    const categories = await this.scrapeCategories();
-
-    const links = [];
-    categories.map((link: CategoryDto) => {
-      link.subCategories.map((item) => {
-        item.productTypes.map((type: ProductTypeDto) => {
-          console.log(type);
-          links.push(type.name);
-        });
+      categories.push({
+        name: department.name,
+        supermarket: SUPERMARKET_NAME,
+        subCategories: Array.from(subCategoriesByGroup.values()),
       });
-    });
+    }
 
-    await page.waitForSelector('.mat-toolbar .mat-focus-indicator', {
-      visible: true,
-      timeout: 60000, // Wait 60 seconds instead of 30
-    });
-    await page.click('.mat-toolbar .mat-focus-indicator');
+    return categories;
+  }
 
-    console.log('Clicked dropdown');
-
-    await page.waitForSelector('.mat-sidenav .menu-item');
-
-    // for (const menu of links) {
-    //   const item = await page.$('.mat-sidenav .menu-item:has-text("${menu}")');
-    //   if (item) {
-    //     await item.click();
-    //     await page.waitForSelector('.products-wrapper'); // Wait for products to load
-
-    //     // Extract product data
-    //     const products = await page.$$eval('.products-wrapper', (items) =>
-    //       items.map((p) => ({
-    //         name: p.querySelector('.product-item .custom-text').textContent,
-    //         price:
-    //           p.querySelector('.product-item .prices')?.textContent || 'N/A',
-    //       })),
-    //     );
-
-    //     console.log(`Products for ${menu}:`, products);
-    //   }
-    //   console.log(item);
-    // }
+  async scrapeCategories(): Promise<CategoryDto[]> {
+    return DEPARTMENTS.map((department) => ({
+      name: department.name,
+      supermarket: SUPERMARKET_NAME,
+      subCategories: [],
+    }));
   }
 }
